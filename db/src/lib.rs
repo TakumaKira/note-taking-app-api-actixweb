@@ -2,6 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use sqlx::FromRow;
 use sqlx::sqlite::SqlitePool;
+use validator_derive::Validate;
 
 #[derive(Debug, thiserror::Error)]
 pub enum DbError {
@@ -27,6 +28,24 @@ pub trait NoteRepository {
     async fn create(&self, note: &NewNote) -> Result<Note>;
     async fn update(&self, id: &str, note: &UpdateNote) -> Result<Note>;
     async fn delete(&self, id: &str) -> Result<Note>;
+}
+
+#[derive(Validate, Clone, PartialEq, Debug)]
+pub struct NewNote {
+    pub id: String,
+    #[validate(length(min = 1, max = 50))]
+    pub title: String,
+    #[validate(length(min = 1, max = 200))]
+    pub content: String,
+    pub created_at: String,
+}
+
+#[derive(Validate, Clone, PartialEq, Debug)]
+pub struct UpdateNote {
+    #[validate(length(min = 1, max = 50))]
+    pub title: String,
+    #[validate(length(min = 1, max = 200))]
+    pub content: String,
 }
 
 pub struct SqliteNoteRepository {
