@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.73"
-sqlx = "0.7.1"
+sqlx = { version = "0.7.1", features = ["sqlite"] }
 thiserror = "1.0.47"
