@@ -3,7 +3,8 @@ use async_trait::async_trait;
 use db::NewNote;
 use db::Note;
 use db::NoteRepository;
-use db::UpdateNote
+use db::UpdateNote;
+use validator::Validate;
 
 #[async_trait]
 pub trait NoteService: Sync + Send {

@@ -9,3 +9,4 @@ edition = "2021"
 anyhow = "1.0.75"
 async-trait = "0.1.73"
 db = { path = "../db" }
+validator = "0.16.1"

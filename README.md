@@ -2,6 +2,7 @@
 
 - [note-taking-app-api-actixweb](#note-taking-app-api-actixweb)
   - [The task from ChatGPT](#the-task-from-chatgpt)
+  - [Getting Started](#getting-started)
 
 ## The task from ChatGPT
 
@@ -50,3 +51,29 @@ Error Handling:
 
 Make sure to handle common HTTP errors (e.g., 404 Not Found, 500 Internal Server Error) with appropriate error messages.
 This API is quite basic and meant for practice. In a real-world scenario, you would need to consider more complex elements like authentication, more robust error handling, data validation, and possibly rate limiting.
+
+## Getting Started
+
+Before running any command remember to export the DATABASE_URL environment variable.
+
+```bash
+export DATABASE_URL=sqlite://$PWD/notes.db
+```
+
+Run the application.
+
+```bash
+make run
+```
+
+Run the test suite:
+
+```bash
+make test
+```
+
+Visit the swagger ui:
+
+```bash
+http://localhost:8081/swagger-ui/
+```
