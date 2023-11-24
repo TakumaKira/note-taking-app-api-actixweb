@@ -5,6 +5,8 @@ use db::Note;
 use db::NoteRepository;
 use db::UpdateNote;
 use validator::Validate;
+#[cfg(test)]
+use mockall::{mock, predicate::*};
 
 #[async_trait]
 pub trait NoteService: Sync + Send {
@@ -49,5 +51,24 @@ impl<R: NoteRepository + Send + Sync> NoteService for NoteServiceImpl<R> {
 
     async fn delete(&self, id: &str) -> Result<Note> {
         self.repository.delete(id).await
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use futures_util::future::FutureExt;
+    use mockall::predicate;
+
+    mock! {
+        Repository {}
+        #[async_trait]
+        impl db::NoteRepository for Repository {
+            async fn all(&self) -> Result<Vec<Note>>;
+            async fn get(&self, id: &str) -> Result<Note>;
+            async fn create(&self, note: &NewNote) -> Result<Note>;
+            async fn update(&self, id: &str, note: &UpdateNote) -> Result<Note>;
+            async fn delete(&self, id: &str) -> Result<Note>;
+        }
     }
 }
