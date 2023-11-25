@@ -7,6 +7,8 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use crate::error::ApiError;
 use crate::domain::{ErrorResponse, MessageResponse};
+#[cfg(test)]
+use mockall::{mock, predicate::*}
 
 pub(super) fn configure(note_service: Data<Box<dyn NoteService>>) -> impl FnOnce(&mut ServiceConfig) {
   |config: &mut ServiceConfig| {
@@ -178,4 +180,26 @@ pub(super) async fn delete_note(id: Path<String>, note_service: Data<Box<dyn Not
   note_service.delete(id.as_str()).await?;
 
   Ok(HttpResponse::NoContent().finish())
+}
+
+#[cfg(test)]
+mod tests {
+  use actix_web::test;
+  use super::*;
+  use anyhow::Result;
+  use async_trait::async_trait;
+  use actix_web::App;
+  use mockall::predicate;
+
+  mock! {
+    Service {}
+    #[async_trait]
+    impl service::NoteService for Service {
+      async fn all(&self) -> Result<Vec<db::Note>;
+      async fn get(&self, id: &str) -> Result<db::Note>;
+      async fn create(&self, note: &db::NewNote) -> Result<db::Note>;
+      async fn update(&self, id: &str, note: &db::UpdateNote) -> Result<db::Note>;
+      async fn delete(&self, id: &str) -> Result<db::Note>;
+    }
+  }
 }

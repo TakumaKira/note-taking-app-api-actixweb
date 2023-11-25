@@ -14,3 +14,8 @@ service = { path = "../service" }
 db = { path = "../db" }
 validator = "0.16.1"
 chrono = "0.4.26"
+uuid = "1.4.1"
+
+[dev-dependencies]
+async-trait = "0.1.73"
+mockall = "0.11.4"
