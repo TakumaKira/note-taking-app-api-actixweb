@@ -2,6 +2,7 @@
 
 - [note-taking-app-api-actixweb](#note-taking-app-api-actixweb)
   - [The task from ChatGPT](#the-task-from-chatgpt)
+  - [Acknowledgment](#acknowledgment)
   - [Getting Started](#getting-started)
 
 ## The task from ChatGPT
@@ -51,6 +52,10 @@ Error Handling:
 
 Make sure to handle common HTTP errors (e.g., 404 Not Found, 500 Internal Server Error) with appropriate error messages.
 This API is quite basic and meant for practice. In a real-world scenario, you would need to consider more complex elements like authentication, more robust error handling, data validation, and possibly rate limiting.
+
+## Acknowledgment
+
+This repository is just a modified version of [this article](https://medium.com/@patrickkoss/building-an-enterprise-grade-rest-api-in-rust-1ac693f47452).
 
 ## Getting Started
 
