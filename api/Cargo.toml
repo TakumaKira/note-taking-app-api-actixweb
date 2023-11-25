@@ -8,13 +8,27 @@ edition = "2021"
 [dependencies]
 actix-web = "4.3.1"
 anyhow = "1.0.74"
-serde = "1.0"
-utoipa = "3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.96"
+serde_derive = "1.0.163"
+utoipa = { version = "3", features = ["actix_extras"] }
+futures = "0.3.28"
+utoipa-swagger-ui = { version = "3.1.5", features = ["actix-web"] }
+utoipa-redoc = { version = "0.1.0", features = ["actix-web"] }
+utoipa-rapidoc = { version = "0.1.0", features = ["actix-web"] }
 service = { path = "../service" }
 db = { path = "../db" }
-validator = "0.16.1"
 chrono = "0.4.26"
-uuid = "1.4.1"
+validator = "0.16.1"
+futures-util = "0.3.28"
+
+[dependencies.uuid]
+version = "1.4.1"
+features = [
+  "v4",
+  "fast-rng",
+  "macro-diagnostics",
+]
 
 [dev-dependencies]
 async-trait = "0.1.73"
