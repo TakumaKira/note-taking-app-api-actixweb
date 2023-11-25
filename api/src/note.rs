@@ -60,7 +60,7 @@ pub(super) struct CreateNoteRequest {
   content: String,
 }
 
-#[derive(Serialize, Deserialize, Close, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub(super) struct CreateNoteResponse {
   note: Note,
 }
@@ -76,7 +76,7 @@ pub(super) struct UpdateNoteRequest {
   content: String,
 }
 
-#[derive(Serialize, Deserialize, Close, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub(super) struct UpdateNoteResponse {
   note: Note,
 }
@@ -101,12 +101,14 @@ impl From<db::Note> for Note {
 pub(super) async fn list_notes(note_service: Data<Box<dyn NoteService>>) -> Result<HttpResponse, ApiError> {
   let db_notes = note_service.all().await?;
   let api_notes: Vec<Note> = db_notes.into_iter().map(Note::from).collect();
+
+  Ok(HttpResponse::Ok().json(ListNotesResponse { notes: api_notes }))
 }
 
 #[utoipa::path(
   responses(
     (status = 200, description = "Get note", body = GetNoteResponse, example = json ! (GetNoteResponse{note: Note{id: String::from("14322988-32fe-447c-ac38-06fb6c699b4a"), title: String::from("Note 1"), content: String::from("This is note #1."), created_at: String::from("2021-01-01T00:00:00Z")}})),
-    (status = 404, description = "Note not found by id", body = ErrorResponse, example = json ! (MessageResponse{message: string::from("note not found")})),
+    (status = 404, description = "Note not found by id", body = ErrorResponse, example = json ! (MessageResponse{message: String::from("note not found")})),
   ),
   params(
     ("id", description = "Unique id")
@@ -115,8 +117,9 @@ pub(super) async fn list_notes(note_service: Data<Box<dyn NoteService>>) -> Resu
 #[get("/notes/{id}")]
 pub(super) async fn get_note(id: Path<String>, note_service: Data<Box<dyn NoteService>>) -> Result<HttpResponse, ApiError> {
   let db_note = note_service.get(id.as_str()).await?;
+  let api_note = Note::from(db_note);
 
-  Ok(HttpResponse::Ok().json(GetNoteResponse { note: db_note }))
+  Ok(HttpResponse::Ok().json(GetNoteResponse { note: api_note }))
 }
 
 #[utoipa::path(
@@ -132,7 +135,7 @@ pub(super) async fn create_note(note_service: Data<Box<dyn NoteService>>, create
     id: Uuid::new_v4().to_string(),
     title: create_note.title.clone(),
     content: create_note.content.clone(),
-    created_at: chrono::offset::Utc::now().native_utc().to_string(),
+    created_at: chrono::offset::Utc::now().naive_utc().to_string(),
   };
   let db_note = note_service.create(&new_note).await?;
   let api_note = Note::from(db_note);
@@ -195,7 +198,7 @@ mod tests {
     Service {}
     #[async_trait]
     impl service::NoteService for Service {
-      async fn all(&self) -> Result<Vec<db::Note>;
+      async fn all(&self) -> Result<Vec<db::Note>>;
       async fn get(&self, id: &str) -> Result<db::Note>;
       async fn create(&self, note: &db::NewNote) -> Result<db::Note>;
       async fn update(&self, id: &str, note: &db::UpdateNote) -> Result<db::Note>;
@@ -248,9 +251,9 @@ mod tests {
       .times(1)
       .returning(move |_| Ok(db::Note {
         id: String::from("new-id"),
-        title: new_student_test.title.clone(),
-        content: new_student_test.content.clone(),
-        created_at: new_student_test.created_at.clone(),
+        title: new_note_test.title.clone(),
+        content: new_note_test.content.clone(),
+        created_at: new_note_test.created_at.clone(),
       }));
 
     let note_service_data = Data::new(Box::new(mock_service) as Box<dyn NoteService>);
@@ -330,10 +333,10 @@ mod tests {
     assert!(resp.status().is_success());
 
     let body = test::read_body(resp).await;
-    let returned_Note: UpdateNoteResponse = serde_json::from_slice(&body).unwrap();
+    let returned_note: UpdateNoteResponse = serde_json::from_slice(&body).unwrap();
 
-    assert_eq!(returned_note.Note.title, update_request.title);
-    assert_eq!(returned_note.Note.content, update_request.content);
+    assert_eq!(returned_note.note.title, update_request.title);
+    assert_eq!(returned_note.note.content, update_request.content);
   }
 
   #[actix_web::test]
@@ -368,7 +371,7 @@ mod tests {
   }
 
   #[actix_web::test]
-  async fn test_delete_student_not_found() {
+  async fn test_delete_note_not_found() {
       let mut mock_service = MockService::new();
 
       // Set up the mock to return an error of type db::NotFound
@@ -376,13 +379,13 @@ mod tests {
           .times(1)
           .returning(|_| Err(anyhow::anyhow!(db::DbError::NotFound)));
 
-      let student_service_data = Data::new(Box::new(mock_service) as Box<dyn StudentService>);
+      let note_service_data = Data::new(Box::new(mock_service) as Box<dyn NoteService>);
 
       let mut app = test::init_service(
-          App::new().configure(configure(student_service_data.clone()))
+          App::new().configure(configure(note_service_data.clone()))
       ).await;
 
-      let req = test::TestRequest::delete().uri("/students/some_id").to_request();
+      let req = test::TestRequest::delete().uri("/notes/some_id").to_request();
       let resp = test::call_service(&mut app, req).await;
 
       assert_eq!(resp.status(), 404);
